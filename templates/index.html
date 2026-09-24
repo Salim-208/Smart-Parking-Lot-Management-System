@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parking Simulation &mdash; Live Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">P</span>
+    <div class="brand-text">
+      <h1>Parking Simulation</h1>
+      <p>Live lot control</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <section class="stats" id="stats">
+    <div class="stat-card">
+      <span class="stat-value" id="stat-free">&mdash;</span>
+      <span class="stat-label">Free bays</span>
+    </div>
+    <div class="stat-card stat-used">
+      <span class="stat-value" id="stat-used">&mdash;</span>
+      <span class="stat-label">Occupied</span>
+    </div>
+    <div class="stat-card stat-vip">
+      <span class="stat-value" id="stat-vip">&mdash;</span>
+      <span class="stat-label">VIP bays free</span>
+    </div>
+    <div class="stat-card stat-queue">
+      <span class="stat-value" id="stat-queue">&mdash;</span>
+      <span class="stat-label">Waiting in queue</span>
+    </div>
+  </section>
+
+  <section class="lots-panel">
+    <div class="panel-head">
+      <h2>Lot map</h2>
+      <div class="legend">
+        <span class="legend-item"><i class="dot free"></i>Free</span>
+        <span class="legend-item"><i class="dot used"></i>Occupied</span>
+        <span class="legend-item"><i class="dot vip"></i>VIP bay</span>
+      </div>
+    </div>
+    <div id="lots"></div>
+  </section>
+
+  <section class="actions-panel">
+    <div class="tabs">
+      <button class="tab active" data-tab="park">Park</button>
+      <button class="tab" data-tab="exit">Exit</button>
+      <button class="tab" data-tab="search">Find</button>
+    </div>
+
+    <form id="form-park" class="tab-pane active">
+      <label>Vehicle number
+        <input type="text" id="park-number" placeholder="e.g. UP80 AB 1234" required>
+      </label>
+      <label>Vehicle type
+        <select id="park-type">
+          <option value="car">Car &mdash; ₹50/hr</option>
+          <option value="bike">Bike &mdash; ₹20/hr</option>
+          <option value="truck">Truck &mdash; ₹80/hr</option>
+        </select>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" id="park-vip">
+        VIP vehicle (may use reserved bays)
+      </label>
+      <button type="submit" class="btn primary">Park vehicle</button>
+    </form>
+
+    <form id="form-exit" class="tab-pane">
+      <label>Vehicle number
+        <input type="text" id="exit-number" placeholder="e.g. UP80 AB 1234" required>
+      </label>
+      <button type="submit" class="btn primary">Exit &amp; generate bill</button>
+    </form>
+
+    <form id="form-search" class="tab-pane">
+      <label>Vehicle number
+        <input type="text" id="search-number" placeholder="e.g. UP80 AB 1234" required>
+      </label>
+      <button type="submit" class="btn primary">Find vehicle</button>
+    </form>
+
+    <div id="result-panel" class="result-panel empty">
+      <p>Results from Park, Exit and Find will appear here.</p>
+    </div>
+  </section>
+
+  <section class="table-panel">
+    <div class="panel-head">
+      <h2>Currently parked</h2>
+      <a class="btn ghost small" href="/api/save">Download records</a>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Number</th><th>Type</th><th>Lot</th><th>Slot</th><th>VIP</th><th>Parked from</th></tr>
+        </thead>
+        <tbody id="vehicles-body">
+          <tr><td colspan="6" class="muted">No vehicles parked yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="table-panel">
+    <div class="panel-head">
+      <h2>Waiting queue</h2>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Number</th><th>Type</th><th>VIP</th></tr>
+        </thead>
+        <tbody id="queue-body">
+          <tr><td colspan="4" class="muted">Queue is empty.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="log-panel">
+    <div class="panel-head">
+      <h2>Activity</h2>
+    </div>
+    <ul id="activity-log" class="activity-log">
+      <li class="muted">No activity yet.</li>
+    </ul>
+  </section>
+
+</main>
+
+<div id="bill-overlay" class="overlay hidden">
+  <div class="bill-card">
+    <h3>Parking bill</h3>
+    <div id="bill-body"></div>
+    <button class="btn primary" id="bill-close">Close</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
